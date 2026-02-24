@@ -1,14 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
 
-	internalhttp "github.com/lwlee2608/go-reference/internal/api/http"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	internalhttp "github.com/lwlee2608/go-reference/internal/api/http"
+	"github.com/lwlee2608/go-reference/internal/db"
+	"github.com/lwlee2608/go-reference/internal/db/sqlc"
 )
 
 var AppVersion = "dev"
@@ -18,7 +21,23 @@ func main() {
 
 	slog.Info("go-reference", "version", AppVersion)
 
-	services := &internalhttp.Services{}
+	if config.DB.URL == "" {
+		panic("db.url is required")
+	}
+
+	if err := db.RunMigrations(config.DB.URL, config.DB.Schema); err != nil {
+		panic(err)
+	}
+
+	dbPool, err := db.InitDB(context.Background(), config.DB.URL, config.DB.Schema)
+	if err != nil {
+		panic(err)
+	}
+	defer dbPool.Close()
+
+	services := &internalhttp.Services{
+		Queries: sqlc.New(dbPool),
+	}
 
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
@@ -39,7 +58,7 @@ func main() {
 	}
 
 	slog.Info("Starting HTTP server", "address", server.Addr)
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	if err = server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		slog.Error("HTTP server error", "error", err)
 	}
 }

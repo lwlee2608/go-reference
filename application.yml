@@ -2,3 +2,6 @@ log:
   level: debug
 http:
   port: 8080
+db:
+  url: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+  schema: public
