@@ -7,7 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/joho/godotenv v1.5.1
-	github.com/lwlee2608/adder v0.2.0
+	github.com/lwlee2608/adder v0.3.1
 	github.com/pressly/goose/v3 v3.26.0
 )
 

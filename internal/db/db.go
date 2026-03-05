@@ -10,7 +10,7 @@ import (
 )
 
 type Config struct {
-	URL    string
+	URL    string `mask:"true"`
 	Schema string
 }
 
