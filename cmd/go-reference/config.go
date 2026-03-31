@@ -1,8 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -39,10 +38,10 @@ func InitConfig() {
 	initLogger(config.Log.Level)
 
 	if strings.ToUpper(config.Log.Level) == LOG_LEVEL_DEBUG {
-		configJSON, err := json.MarshalIndent(config, "", "  ")
+		configJSON, err := adder.PrettyJSON(config)
 		if err == nil {
-			fmt.Println("Config loaded:")
-			fmt.Println(string(configJSON))
+			slog.Debug("Config loaded:")
+			slog.Debug(configJSON)
 		}
 	}
 }
