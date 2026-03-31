@@ -37,10 +37,8 @@ func InitDB(ctx context.Context, cfg Config) (*pgxpool.Pool, error) {
 		poolConfig.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
 			_, err := conn.Exec(ctx, fmt.Sprintf("SET search_path TO %s", sanitizedSchema))
 			if err != nil {
-				slog.Warn("Failed to set search_path in AfterConnect", "error", err)
 				return err
 			}
-			slog.Debug("Set search_path for new connection", "schema", schema)
 			return nil
 		}
 
