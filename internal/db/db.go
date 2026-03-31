@@ -10,19 +10,19 @@ import (
 )
 
 type Config struct {
-	URL    string `mask:"true"`
-	Schema string
+	URL      string `mask:"true"`
+	Schema   string
+	MaxConns int32
+	MinConns int32
 }
 
-func InitDB(ctx context.Context, url, schema string) (*pgxpool.Pool, error) {
-	poolConfig, err := pgxpool.ParseConfig(url)
+func InitDB(ctx context.Context, cfg Config) (*pgxpool.Pool, error) {
+	poolConfig, err := pgxpool.ParseConfig(cfg.URL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse database config: %w", err)
 	}
 
-	poolConfig.MaxConns = 10
-	poolConfig.MinConns = 2
-
+	schema := cfg.Schema
 	if schema != "" {
 		if poolConfig.ConnConfig.RuntimeParams == nil {
 			poolConfig.ConnConfig.RuntimeParams = map[string]string{}

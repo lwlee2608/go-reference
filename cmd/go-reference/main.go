@@ -29,7 +29,7 @@ func main() {
 		panic(err)
 	}
 
-	dbPool, err := db.InitDB(context.Background(), config.DB.URL, config.DB.Schema)
+	dbPool, err := db.InitDB(context.Background(), config.DB)
 	if err != nil {
 		panic(err)
 	}
