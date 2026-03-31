@@ -32,14 +32,10 @@ func InitDB(ctx context.Context, cfg Config) (*pgxpool.Pool, error) {
 
 	schema := cfg.Schema
 	if schema != "" {
-		if poolConfig.ConnConfig.RuntimeParams == nil {
-			poolConfig.ConnConfig.RuntimeParams = map[string]string{}
-		}
-		poolConfig.ConnConfig.RuntimeParams["search_path"] = schema
-		slog.Info("Setting search_path for connection pool", "schema", schema)
+		sanitizedSchema := pgx.Identifier{schema}.Sanitize()
 
 		poolConfig.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
-			_, err := conn.Exec(ctx, fmt.Sprintf("SET search_path TO %s", pgx.Identifier{schema}.Sanitize()))
+			_, err := conn.Exec(ctx, fmt.Sprintf("SET search_path TO %s", sanitizedSchema))
 			if err != nil {
 				slog.Warn("Failed to set search_path in AfterConnect", "error", err)
 				return err
@@ -47,6 +43,8 @@ func InitDB(ctx context.Context, cfg Config) (*pgxpool.Pool, error) {
 			slog.Debug("Set search_path for new connection", "schema", schema)
 			return nil
 		}
+
+		slog.Info("Setting search_path for connection pool", "schema", schema)
 	}
 
 	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
