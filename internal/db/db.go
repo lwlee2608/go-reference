@@ -22,6 +22,14 @@ func InitDB(ctx context.Context, cfg Config) (*pgxpool.Pool, error) {
 		return nil, fmt.Errorf("unable to parse database config: %w", err)
 	}
 
+	if cfg.MaxConns > 0 {
+		poolConfig.MaxConns = cfg.MaxConns
+	}
+
+	if cfg.MinConns > 0 {
+		poolConfig.MinConns = cfg.MinConns
+	}
+
 	schema := cfg.Schema
 	if schema != "" {
 		if poolConfig.ConnConfig.RuntimeParams == nil {
