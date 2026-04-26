@@ -120,6 +120,10 @@ func (h *UserHandler) Update(c *gin.Context) {
 		FullName: fullName,
 	})
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
 		_ = c.Error(err)
 		return
 	}
@@ -134,7 +138,11 @@ func (h *UserHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.queries.DeleteUser(c.Request.Context(), id); err != nil {
+	if _, err := h.queries.DeleteUser(c.Request.Context(), id); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
 		_ = c.Error(err)
 		return
 	}
