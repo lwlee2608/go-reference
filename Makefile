@@ -18,7 +18,7 @@ build:
 run:
 	$(GO) run $(LDFLAGS) cmd/$(APP)/*.go
 test:
-	$(GO) test -v $(shell $(GO) list ./... | grep -v /systemtest)
+	$(GO) test ./...
 systemtest:
 	$(GO) test -v -tags=systemtest -count=1 ./systemtest/...
 generate:
