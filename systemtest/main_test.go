@@ -1,3 +1,5 @@
+//go:build systemtest
+
 package systemtest
 
 import (

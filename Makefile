@@ -4,7 +4,7 @@ APP             := go-reference
 VERSION         ?= v0.1.0
 LDFLAGS         := -ldflags "-X main.AppVersion=$(VERSION)"
 
-.PHONY: all build clean run test dep generate
+.PHONY: all build clean run test systemtest dep generate
 
 all: clean build
 
@@ -18,6 +18,8 @@ build:
 run:
 	$(GO) run $(LDFLAGS) cmd/$(APP)/*.go
 test:
-	$(GO) test -v ./...
+	$(GO) test -v $(shell $(GO) list ./... | grep -v /systemtest)
+systemtest:
+	$(GO) test -v -tags=systemtest -count=1 ./systemtest/...
 generate:
 	sqlc generate
