@@ -18,7 +18,10 @@ import (
 var AppVersion = "dev"
 
 func main() {
-	InitConfig()
+	if err := InitConfig(); err != nil {
+		slog.Error("failed to initialize config", "error", err)
+		os.Exit(1)
+	}
 
 	slog.Info("go-reference", "version", AppVersion)
 

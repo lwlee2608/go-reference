@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"strings"
 
@@ -18,8 +19,8 @@ type Config struct {
 
 var config Config
 
-func InitConfig() {
-	_ = godotenv.Load()
+func InitConfig() error {
+	_ = godotenv.Overload()
 
 	adder.SetConfigName("application")
 	adder.AddConfigPath(".")
@@ -27,12 +28,19 @@ func InitConfig() {
 	adder.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	adder.AutomaticEnv()
 
+	// Bind Secret Environment Variables
+	//_ = adder.BindEnv("auth.secretkey", "OPENAI_SECRET_KEY")
+
 	if err := adder.ReadInConfig(); err != nil {
-		panic(err)
+		return fmt.Errorf("failed to read config: %w", err)
 	}
 
 	if err := adder.Unmarshal(&config); err != nil {
-		panic(err)
+		return fmt.Errorf("failed to unmarshal config: %w", err)
+	}
+
+	if err := config.Validate(); err != nil {
+		return fmt.Errorf("invalid config: %w", err)
 	}
 
 	initLogger(config.Log.Level)
@@ -44,4 +52,10 @@ func InitConfig() {
 			slog.Debug(configJSON)
 		}
 	}
+
+	return nil
+}
+
+func (c Config) Validate() error {
+	return nil
 }
