@@ -3,7 +3,7 @@ package dto
 import (
 	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 	"github.com/lwlee2608/go-reference/internal/db/sqlc"
 )
 
@@ -14,7 +14,7 @@ type CreateUserRequest struct {
 }
 
 type UpdateUserRequest struct {
-	FullName string `json:"full_name"`
+	FullName *string `json:"full_name"`
 }
 
 type UserResponse struct {
@@ -28,7 +28,7 @@ type UserResponse struct {
 
 func NewUserResponse(u sqlc.User) UserResponse {
 	resp := UserResponse{
-		ID:        pgUUIDString(u.ID),
+		ID:        uuid.UUID(u.ID.Bytes).String(),
 		Username:  u.Username,
 		Role:      u.Role,
 		CreatedAt: u.CreatedAt.Time,
@@ -38,15 +38,4 @@ func NewUserResponse(u sqlc.User) UserResponse {
 		resp.FullName = u.FullName.String
 	}
 	return resp
-}
-
-func pgUUIDString(id pgtype.UUID) string {
-	if !id.Valid {
-		return ""
-	}
-	b, _ := id.MarshalJSON()
-	if len(b) >= 2 {
-		return string(b[1 : len(b)-1])
-	}
-	return ""
 }

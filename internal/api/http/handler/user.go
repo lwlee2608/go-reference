@@ -5,10 +5,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/lwlee2608/go-reference/internal/api/http/dto"
 	"github.com/lwlee2608/go-reference/internal/db/sqlc"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserHandler struct {
@@ -26,12 +29,23 @@ func (h *UserHandler) Create(c *gin.Context) {
 		return
 	}
 
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
 	user, err := h.queries.CreateUser(c.Request.Context(), sqlc.CreateUserParams{
 		Username:     req.Username,
-		PasswordHash: req.Password,
+		PasswordHash: string(hash),
 		FullName:     pgText(req.FullName),
 	})
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
+			c.JSON(http.StatusConflict, gin.H{"error": "username already exists"})
+			return
+		}
 		_ = c.Error(err)
 		return
 	}
@@ -86,15 +100,26 @@ func (h *UserHandler) Update(c *gin.Context) {
 		return
 	}
 
-	user, err := h.queries.UpdateUser(c.Request.Context(), sqlc.UpdateUserParams{
-		ID:       id,
-		FullName: pgText(req.FullName),
-	})
+	current, err := h.queries.GetUser(c.Request.Context(), id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 			return
 		}
+		_ = c.Error(err)
+		return
+	}
+
+	fullName := current.FullName
+	if req.FullName != nil {
+		fullName = pgText(*req.FullName)
+	}
+
+	user, err := h.queries.UpdateUser(c.Request.Context(), sqlc.UpdateUserParams{
+		ID:       id,
+		FullName: fullName,
+	})
+	if err != nil {
 		_ = c.Error(err)
 		return
 	}
@@ -119,10 +144,8 @@ func (h *UserHandler) Delete(c *gin.Context) {
 
 func parseUUID(s string) (pgtype.UUID, error) {
 	var id pgtype.UUID
-	if err := id.Scan(s); err != nil {
-		return id, err
-	}
-	return id, nil
+	err := id.Scan(s)
+	return id, err
 }
 
 func pgText(s string) pgtype.Text {
