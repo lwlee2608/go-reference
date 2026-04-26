@@ -20,12 +20,17 @@ func SetupRoute(engine *gin.Engine, srvs *Services) {
 	engine.Use(middleware.ErrorHandler())
 
 	healthHandler := handler.NewHealthHandler()
+	userHandler := handler.NewUserHandler(srvs.Queries)
 
 	engine.GET("/health", healthHandler.Check)
 
 	apis := engine.Group("/api/v1")
 	{
-		_ = apis
-		// Add your API routes here
+		users := apis.Group("/users")
+		users.POST("", userHandler.Create)
+		users.GET("", userHandler.List)
+		users.GET("/:id", userHandler.Get)
+		users.PATCH("/:id", userHandler.Update)
+		users.DELETE("/:id", userHandler.Delete)
 	}
 }
