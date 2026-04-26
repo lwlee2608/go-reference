@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -22,16 +23,19 @@ func main() {
 	slog.Info("go-reference", "version", AppVersion)
 
 	if config.DB.URL == "" {
-		panic("db.url is required")
+		slog.Error("db.url is required")
+		os.Exit(1)
 	}
 
 	if err := db.RunMigrations(config.DB.URL, config.DB.Schema); err != nil {
-		panic(err)
+		slog.Error("failed to run migrations", "error", err)
+		os.Exit(1)
 	}
 
 	dbPool, err := db.InitDB(context.Background(), config.DB)
 	if err != nil {
-		panic(err)
+		slog.Error("failed to initialize database", "error", err)
+		os.Exit(1)
 	}
 	defer dbPool.Close()
 
