@@ -4,7 +4,6 @@ package systemtest
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +21,6 @@ func TestSystem(t *testing.T) {
 	dbUser := "postgres"
 	dbPassword := "postgres"
 	dbName := "postgres"
-	dbHost := "localhost"
 	schema := "public"
 
 	ctx := context.Background()
@@ -35,11 +33,8 @@ func TestSystem(t *testing.T) {
 		assert.NoError(t, postgres.TerminatePostgres(ctx, container))
 	}()
 
-	port, err := container.MappedPort(ctx, "5432/tcp")
+	dbURL, err := container.ConnectionString(ctx, "sslmode=disable")
 	require.NoError(t, err)
-
-	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		dbUser, dbPassword, dbHost, port.Num(), dbName)
 
 	require.NoError(t, db.RunMigrations(dbURL, schema))
 
