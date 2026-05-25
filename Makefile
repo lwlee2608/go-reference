@@ -1,8 +1,10 @@
 GO = $(shell which go 2>/dev/null)
 
 APP             := go-reference
-VERSION         ?= v0.1.0
-LDFLAGS         := -ldflags "-X main.AppVersion=$(VERSION)"
+VERSION         ?= $(shell cat VERSION)
+COMMIT_SHA      ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo dev)
+LDFLAGS         := -ldflags "-X main.AppVersion=$(VERSION)-$(COMMIT_SHA)"
+IMAGE           ?= $(APP)
 
 .PHONY: all help build clean run test systemtest dep generate
 
@@ -21,6 +23,7 @@ help:
 	@echo "  test        Run unit tests"
 	@echo "  systemtest  Run system tests against a real Postgres container"
 	@echo "  generate    Regenerate sqlc code from SQL queries"
+	@echo "  docker      Build Docker image tagged with version and latest"
 
 dep:
 	$(GO) install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.29.0
@@ -37,3 +40,5 @@ systemtest:
 	$(GO) test -v -tags=systemtest -count=1 ./systemtest/...
 generate:
 	sqlc generate
+docker:
+	$(DOCKER) build --build-arg APP=$(APP) --build-arg VERSION=$(VERSION) --build-arg COMMIT_SHA=$(COMMIT_SHA) -t $(IMAGE):$(VERSION) -t $(IMAGE):latest .
