@@ -1,4 +1,5 @@
 GO = $(shell which go 2>/dev/null)
+DOCKER = $(shell which docker 2>/dev/null)
 
 APP             := go-reference
 VERSION         ?= $(shell cat VERSION)
@@ -41,4 +42,4 @@ systemtest:
 generate:
 	sqlc generate
 docker:
-	$(DOCKER) build --build-arg APP=$(APP) --build-arg VERSION=$(VERSION) --build-arg COMMIT_SHA=$(COMMIT_SHA) -t $(IMAGE):$(VERSION) -t $(IMAGE):latest .
+	$(DOCKER) build --build-arg COMMIT_SHA=$(COMMIT_SHA) -t $(IMAGE):$(VERSION) -t $(IMAGE):latest .
