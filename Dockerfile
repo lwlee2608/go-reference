@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 FROM golang:1.25 AS build-env
 
 ARG COMMIT_SHA=dev
@@ -8,13 +10,17 @@ ENV GO111MODULE=on  \
     GOARCH=amd64
 
 WORKDIR /build
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+
 COPY cmd/go-reference go-reference/
 COPY internal/ internal/
 COPY pkg/ pkg/
-COPY go.mod .
-COPY go.sum .
 COPY VERSION ./
-RUN VERSION=$(cat VERSION) && \
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    VERSION=$(cat VERSION) && \
     go build -o app -ldflags "-X main.AppVersion=${VERSION}-${COMMIT_SHA}" go-reference/*.go
 
 
