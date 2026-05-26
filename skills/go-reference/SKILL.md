@@ -1,5 +1,5 @@
 ---
-name: go-reference-template
+name: go-reference
 description: Use when scaffolding a Go project with a Dockerfile, sqlc, Makefile, or GitHub Actions CI. Refers to github.com/lwlee2608/go-reference as the canonical template.
 user-invocable: true
 ---
@@ -10,11 +10,7 @@ When the user asks to Dockerize a Go project, add a Makefile, set up sqlc, or ad
 
 ## Arguments
 
-The user may pass an argument describing what to scaffold (e.g. "Add Dockerfile and Docker CI", "Set up sqlc", "Add Makefile"). Treat the argument as the scope of work:
-
-- Parse the argument to identify which template pieces to bring in (Dockerfile, Makefile, sqlc config, GitHub Actions workflows, etc.).
-- Only copy/adapt the files relevant to that scope — don't scaffold the entire template if the user asked for one piece.
-- If no argument is given, ask the user which parts of the template they want before copying anything.
+The argument (e.g. "Add Dockerfile", "Set up sqlc") scopes the work — copy only the matching files, not the whole template. If no argument is given, ask which parts to scaffold.
 
 ## Rules
 
