@@ -8,6 +8,14 @@ user-invocable: true
 
 When the user asks to Dockerize a Go project, add a Makefile, set up sqlc, or add CI, read [`lwlee2608/go-reference`](https://github.com/lwlee2608/go-reference) and refer to it as the canonical template. Do not write these files from scratch or from memory.
 
+## Arguments
+
+The user may pass an argument describing what to scaffold (e.g. "Add Dockerfile and Docker CI", "Set up sqlc", "Add Makefile"). Treat the argument as the scope of work:
+
+- Parse the argument to identify which template pieces to bring in (Dockerfile, Makefile, sqlc config, GitHub Actions workflows, etc.).
+- Only copy/adapt the files relevant to that scope — don't scaffold the entire template if the user asked for one piece.
+- If no argument is given, ask the user which parts of the template they want before copying anything.
+
 ## Rules
 
 1. **Clone the live repo, never work from memory.** Source of truth is `https://github.com/lwlee2608/go-reference` (branch `main`). Clone it once with `git clone --depth=1 https://github.com/lwlee2608/go-reference /tmp/go-reference-template`, then `ls` and `Read` files from there. This lets you see the full project layout (`cmd/`, `internal/api`, `internal/db`) — that structure is part of the template too, not just the individual files. The repo evolves; reproducing contents from memory causes drift.
