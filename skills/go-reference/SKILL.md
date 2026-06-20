@@ -2,6 +2,7 @@
 name: go-reference
 description: Use when scaffolding a Go project with a Dockerfile, sqlc, Makefile, or GitHub Actions CI. Refers to github.com/lwlee2608/go-reference as the canonical template.
 user-invocable: true
+argument-hint: [Dockerfile | Makefile | sqlc | CI]
 ---
 
 # go-reference Template
